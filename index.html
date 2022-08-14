@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en" class="dark dark:bg-slate-900">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geography Game</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography,aspect-ratio,line-clamp"></script>
+    <script src="darkModeToggle.js" defer></script>
+    <link rel="stylesheet" href="https://unpkg.com/flowbite@1.5.1/dist/flowbite.min.css" />
+    <script src="https://unpkg.com/flowbite@1.5.1/dist/flowbite.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.10.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/aes-min.js"></script>
+    <link href="daisyui.css" rel="stylesheet" type="text/css" />
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.21/lodash.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/party-js@latest/bundle/party.min.js"></script>
+    <script src="hammer.js"></script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvx5IM2bbHnOb4sY-0aISwH8bAxH7ecS4&libraries=geometry&callback=initApp">
+    </script>
+    <style>
+        #map svg {
+            background: rgba(12, 12, 240, 0.412);
+        }
+    </style>
+
+</head>
+
+<body class="dark:bg-slate-900 bg-white">
+    <div class="zero absolute pointer-events-none top-0 left-0"></div>
+    <div class="highlight pointer-events-none absolute hidden z-50">
+        <div class="border-amber-400 border-4 rounded-full p-7 -translate-x-1/2 -translate-y-1/2"></div>
+    </div>
+    <div class="spotlight w-full h-full lg:absolute z-50 pointer-events-none fixed"></div>
+    <div class="flex items-center h-screen flex-col dark:bg-slate-900 bg-white text-black">
+        <div class="rounded-3xl border-slate-800 border-solid border-2 p-10 border-radius-10 relative">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center justify-center">
+                    <h1 class="text-4xl font-bold dark:text-white">Multiplayer Geo-Game</h1>
+                </div>
+                <button id="theme-toggle" type="button"
+                    class="text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 rounded-lg text-sm p-2.5">
+                    <svg id="theme-toggle-dark-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                    </svg>
+                    <svg id="theme-toggle-light-icon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"
+                            fill-rule="evenodd" clip-rule="evenodd"></path>
+                    </svg>
+                </button>
+            </div>
+            <div>
+                <div id="0">
+                    <h1 class="text-2xl mb-3 dark:text-white">Sign in to play</h1>
+                    <div class="flex">
+
+                        <button type="button"
+                            class="text-white bg-[#4285F4] hover:bg-[#4285F4]/90 focus:ring-4 focus:outline-none focus:ring-[#4285F4]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#4285F4]/55 mr-2 mb-2"
+                            id="google">
+                            <svg class="mr-2 -ml-1 w-4 h-4" aria-hidden="true" focusable="false" data-prefix="fab"
+                                data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512">
+                                <path fill="currentColor"
+                                    d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z">
+                                </path>
+                            </svg>
+                            Sign in with Google
+                        </button><button type="button"
+                            class="text-white bg-[#050708] hover:bg-[#050708]/90 focus:ring-4 focus:outline-none focus:ring-[#050708]/50 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:focus:ring-[#050708]/50 dark:hover:bg-[#050708]/30 mr-2 mb-2"
+                            id="anonymous">
+                            Continue As Anonymous
+                        </button>
+                    </div>
+
+                    <button
+                        class="block w-full md:w-auto text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-6 mb-6"
+                        type="button" data-modal-toggle="tut-modal">
+                        Rules & Tutorial
+                    </button>
+                    <div id="tut-modal" tabindex="-1"
+                        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 w-full md:inset-0 h-modal md:h-full"
+                        data-modal-placement="top-left">
+                        <div class="relative p-4 w-full max-w-lg h-full md:h-auto">
+                            <!-- Modal content -->
+                            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                <!-- Modal header -->
+                                <div
+                                    class="flex justify-between items-center p-5 rounded-t border-b dark:border-gray-600">
+                                    <h3 class="text-xl font-medium text-gray-900 dark:text-white">
+                                        Rules & Tutorial
+                                    </h3>
+                                    <button type="button"
+                                        class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                                        data-modal-toggle="tut-modal">
+                                        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd"
+                                                d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                                                clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="sr-only">Close modal</span>
+                                    </button>
+                                </div>
+                                <!-- Modal body -->
+                                <div class="p-6 space-y-6">
+                                    <h3 class="text-xl font-medium text-gray-900 dark:text-white">Tutorial</h3>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        You Need To Answer Geography-related questions to earn points. Each correct
+                                        answer will give you one point. <br>
+
+                                    </p>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        For The flag quiz you can answer it with the country name, its IBAN ALPHA2CODE
+                                        and its IBAN ALPHA3CODE (example: Country: Switzerland, ALPHA2CODE: CH,
+                                        ALPHA3CODE: CHE).<br>
+                                    </p>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        You Will need to pinpoint the location of some countries too (every country on
+                                        earth is included). <br>
+                                    </p>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        <b>Note: You WILL need to click "Submit" to answer. Pressing Enter is not
+                                            enough</b>
+                                    </p>
+                                    <h3 class="text-xl font-medium text-gray-900 dark:text-white">Map Controls:</h3>
+                                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">PC:</h3>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        Mouse Wheel: zoom <br>
+                                        + and - buttons: zoom <br>
+                                        Left click and drag: drag the map <br>
+                                        Right Click: Place Marker
+                                    </p>
+                                    <h3 class="text-md font-medium text-gray-700 dark:text-gray-300">Mobile:</h3>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        + and - buttons: zoom <br>
+                                        Drag: drag the map <br>
+                                        Long Press: Place Marker <br>
+                                    </p>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        Note: If you have problems with the map, click on the <br>'lock touch to map'
+                                        button. It'll disable scrolling. To re-enable it, click it again.
+                                    </p>
+                                    <h3 class="text-xl font-medium text-gray-900 dark:text-white">Rules</h3>
+                                    <p class="text-base leading-relaxed text-gray-500 dark:text-gray-400">
+                                        Do Not Cheat! Cheating is not fun for others.
+                                    </p>
+                                </div>
+                                <!-- Modal footer -->
+                                <div
+                                    class="flex items-center p-6 space-x-2 rounded-b border-t border-gray-200 dark:border-gray-600">
+                                    <button data-modal-toggle="tut-modal" type="button"
+                                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">OK</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div id="1" class="hidden">
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+                            id="name-label">Name</label>
+                        <input type="text" id="name"
+                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Vadim">
+
+                        <p class="mt-2 text-sm text-red-600 dark:text-red-500 hidden" id="name-error"><span
+                                class="font-medium">Oh, snap!</span> You need to enter a valid name.</p>
+                    </div>
+                    <button type="button"
+                        class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mt-3"
+                        id="set_name">Set Name</button>
+                </div>
+                <div id="2" class="hidden">
+                    <h1 class="mt-3 text-2xl mb-3 dark:text-white">Share This Page's link with your friends to play with
+                        them!</h1>
+                    <button data-tooltip-target="tooltip-copy" data-tooltip-trigger="click" type="button"
+                        class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 shadow-lg shadow-blue-500/50 dark:shadow-lg dark:shadow-blue-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2"
+                        id="copy">Copy
+                        Link</button>
+                    <button
+                        class="block w-full md:w-auto text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-6"
+                        type="button" data-modal-toggle="customize-modal">
+                        Customize Game
+                    </button>
+                    <div id="customize-modal" data-modal-placement="top-left" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 w-full md:inset-0 h-modal md:h-full">
+                        <div class="relative p-4 w-full max-w-2xl h-full md:h-auto">
+                            <!-- Modal content -->
+                            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                                <!-- Modal header -->
+                                <div class="flex justify-between items-center p-5 rounded-t border-b dark:border-gray-600">
+                                    <h3 class="text-xl font-medium text-gray-900 dark:text-white">
+                                        Game Customization
+                                    </h3>
+                                    <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-toggle="customize-modal">
+                                        <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                                        <span class="sr-only">Close modal</span>
+                                    </button>
+                                </div>
+                                <!-- Modal body -->
+                                <div class="p-6">
+                                    <label for="flag-num" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Flag Guessing Number</label>
+                                    <input id="flag-num" type="range" min="0" value="5" max="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-500">
+                                    <p id="flag-num-l" class="block mb-6 text-sm font-medium text-gray-900 dark:text-gray-300">5</p>
+                                    <label for="flag-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Time Per Flag Guessing</label>
+                                    <input id="flag-time" type="range" min="5" value="30" max="60" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-500">
+                                    <p id="flag-time-l" class="block mb-6 text-sm font-medium text-gray-900 dark:text-gray-300">30</p>
+                                    <label for="map-num" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Map Guessing Number</label>
+                                    <input id="map-num" type="range" min="0" value="5" max="25" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-500">
+                                    <p id="map-num-l" class="block mb-6 text-sm font-medium text-gray-900 dark:text-gray-300">5</p>
+                                    <label for="map-time" class="block mb-2 text-sm font-medium text-gray-900 dark:text-gray-300">Time Per Map Guessing</label>
+                                    <input id="map-time" type="range" min="5" value="30" max="60" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-500">
+                                    <p id="map-time-l" class="block mb-6 text-sm font-medium text-gray-900 dark:text-gray-300">30</p>
+                                    
+                                </div>
+                                <!-- Modal footer -->
+                                <div class="flex items-center p-6 space-x-2 rounded-b border-t border-gray-200 dark:border-gray-600">
+                                    <button data-modal-toggle="customize-modal" type="button" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" id="customize-game">Customize!</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <img id="qrcode" class="mt-3">
+                    <div id="tooltip-copy" role="tooltip"
+                        class="inline-block absolute invisible z-10 py-2 px-3 text-sm font-medium text-white bg-gray-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700">
+                        Copied to Clipboard!
+                        <div class="tooltip-arrow" data-popper-arrow></div>
+                    </div>
+                </div>
+                <div id="players">
+                </div>
+                <div id="3" class="hidden">
+                    <button type="button"
+                        class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 mt-5"
+                        id="createroom">Create new room</button>
+                </div>
+                <div id="4" class="hidden">
+                    <button type="button"
+                        class="text-white bg-gradient-to-r from-green-400 via-green-500 to-green-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 shadow-lg shadow-green-500/50 dark:shadow-lg dark:shadow-green-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center mr-2 mb-2 mt-5"
+                        id="startgame">Start
+                        Game</button>
+                </div>
+                <div class="my-10 hidden"></div>
+            </div>
+            <div class="absolute bottom-3 flex justify-between w-full pr-20 hidden">
+                <div class="relative w-full">
+                    <div class="absolute bottom-3 flex justify-between w-full">
+                        <h1 class="text-slate-500 text-sm mr-10 break-all">User ID: <span id="uid">none</span></h1>
+                        <h1 class="text-slate-500 text-sm break-all">Room ID: <span id="rid">none</span></h1>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-3 flex justify-between w-full pr-20" id="credits">
+                <div class="relative w-full">
+                    <div class="absolute bottom-3 flex justify-between w-full">
+                        <h1 class="text-slate-500 text-sm mr-10 break-all">Made By <a
+                                href="https://github.com/adrianvla">Adrian Vlasov</a></h1>
+                    </div>
+                </div>
+            </div>
+            <div id="gam" class="flex flex-col justify-center items-center w-full hidden">
+                <div id="countdown" class="flex justify-center">
+                    <span class="countdown font-mono text-6xl text-slate-400" id="countdown_">
+                        <span style="--value:0;" id="cdwn"></span>
+                    </span>
+                    <h1 class="text-4xl font-bold text-amber-400 items-center flex ml-5 hidden">
+                        <span>Score:&nbsp;</span><span id="score">0</span></h1>
+                </div>
+                <div class="mt-6 hidden" id="q-w">
+                    <h1 class="text-4xl font-mono dark:text-white" id="q">What Country Is This</h1>
+                </div>
+                <div class="mt-6 select-none hidden" id="flagQ">
+                    <div id="flagAns-c" class="hidden">
+                        <div id="flagAns-p-l">
+                            <h1 class="text-4xl font-mono dark:text-red-400 text-red-500" id="flagAns-me-c">You Put:
+                                <span id="flagAns-me"></span></h1>
+                        </div>
+                        <h1 class="text-4xl font-mono dark:text-emerald-400 text-emerald-500 mt-5">Correct Answer: <span
+                                id="flagAns-correct"></span></h1>
+                    </div>
+
+                    <div
+                        class="max-w-sm bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700">
+                        <img class="rounded-lg touch-none select-none pointer-events-none" src="" alt="" id="qmig"
+                            draggable=false />
+                    </div>
+                    <div class="relative mt-5" id="ansInp1-c">
+                        <input type="search" id="ansInp1"
+                            class="block p-4 pl-4 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            placeholder="Answer Here" required>
+                        <button
+                            class="text-white absolute right-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            id="s">Submit</button>
+                    </div>
+                </div>
+                <div class="mt-6 hidden" id="map-c">
+                    <div id="mapAns-c" class="flex items-center flex-col mb-5">
+                        <div id="mapAns-p-l">
+                            <div class="flex justify-center items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" class="shadow-2xl"
+                                    viewBox="0 0 24 24">
+                                    <path
+                                        d="m 12,2 c -3.8641657,0.00441 -6.9955914,3.1358343 -7,7 0,5.353 6.036,11.45 6.293,11.707 L 12,21.414 12.707,20.707 C 12.964,20.45 19,14.353 19,9 18.995591,5.1358343 15.864166,2.0044086 12,2 Z"
+                                        fill="#faa" sodipodi:nodetypes="ccscscc" />
+                                    <path d="M12 6a3 3 0 1 0 3 3 3 3 0 0 0-3-3zm0 4a1 1 0 1 1 1-1 1 1 0 0 1-1 1z"
+                                        fill="#fff" /></svg>
+                                <h1 class="text-4xl font-mono text-white font-bold p-2 rounded-lg"
+                                    style="background:#faa" id="mapAns-me-c">You</h1>
+                            </div>
+
+                        </div>
+                    </div>
+                    <button type="button"
+                        class="py-2.5 px-5 mr-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 hidden"
+                        id="lockMap">Lock touch to map</button>
+
+                    <div class="bg-white rounded-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 overflow-hidden w-full relative"
+                        id="m">
+
+                        <div class="inline-flex rounded-md shadow-sm top-4 left-4 absolute pointer-events-auto z-10"
+                            role="group">
+                            <button type="button"
+                                class="py-2 px-4 text-sm font-medium text-gray-900 bg-white rounded-l-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white"
+                                id="zoomPlus">
+                                +
+                            </button>
+                            <button type="button"
+                                class="py-2 px-4 text-sm font-medium text-gray-900 bg-white rounded-r-md border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-2 focus:ring-blue-700 focus:text-blue-700 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:hover:text-white dark:hover:bg-gray-600 dark:focus:ring-blue-500 dark:focus:text-white"
+                                id="zoomMinus">
+                                -
+                            </button>
+                        </div>
+                        <div class="absolute h-full w-full">
+                            <div class="relative h-full w-full" id="markerList">
+                            </div>
+                        </div>
+
+                        <div id="map" class="relative overflow-hidden w-[60vw] h-[50vw] cursor-crosshair">
+
+                        </div>
+
+                    </div>
+                    <button type="button"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 mr-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800 mt-5"
+                        id="submit">Submit</button>
+
+                </div>
+                <div class="mt-6 lg:w-[50vw] w-screen flex flex-col justify-center items-center hidden"
+                    id="leaderboard-c">
+                    <h1 class="text-4xl font-bold dark:text-white">LeaderBoard</h1>
+                    <div class="flex justify-center	w-full items-end h-[30vh] mt-40 lg:max-h-[30vh] max-h-48">
+                        <div class="min-w- relative p-6 w-1/5 bg-white rounded-l-lg border-l border-y border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 h-full flex flex-col justify-center items-center h-2/3 z-10"
+                            id="_2-pl">
+                            <div class="absolute top-0 h-1/5 z-0 w-1/2">
+                                <img src="m-s.svg" alt="1st place medal" class="">
+                            </div>
+                            <h1
+                                class="mb-2 text-xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-white z-10 sc whitespace-nowrap">
+                                Score</h1>
+                            <h1
+                                class="mb-2 lg:text-2xl tracking-tight text-gray-900 dark:text-white z-10 whitespace-nowrap">
+                                2nd Place</h1>
+                            <h1
+                                class="mb-2 text-2xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-white absolute -top-3 -translate-y-full tit whitespace-nowrap	z-20">
+                                Player 1</h1>
+                        </div>
+                        <div class="relative p-6 w-1/5 bg-white rounded-t-lg border border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 h-full flex flex-col justify-center items-center h-full z-0"
+                            id="_1-pl">
+                            <div class="absolute top-0 h-1/5 z-0 w-1/2">
+                                <img src="m-g.svg" alt="1st place medal" class="">
+                            </div>
+                            <h1
+                                class="mb-2 text-xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-white z-10 sc whitespace-nowrap">
+                                Score</h1>
+                            <h1
+                                class="mb-2 lg:text-2xl tracking-tight text-gray-900 dark:text-white z-10 whitespace-nowrap">
+                                1st Place</h1>
+                            <h1
+                                class="mb-2 text-2xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-white absolute -top-3 -translate-y-full tit whitespace-nowrap	z-20">
+                                Player 2</h1>
+                        </div>
+                        <div class="relative p-6 w-1/5 bg-white rounded-r-lg border-r border-y border-gray-200 shadow-md dark:bg-gray-800 dark:border-gray-700 h-full flex flex-col justify-center items-center h-1/3 z-0"
+                            id="_3-pl">
+                            <div class="absolute top-0 h-1/5 z-0 w-1/2">
+                                <img src="m-b.svg" alt="1st place medal" class="">
+                            </div>
+                            <h1
+                                class="mb-2 text-xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-white z-10 sc whitespace-nowrap">
+                                Score</h1>
+                            <h1
+                                class="mb-2 lg:text-2xl tracking-tight text-gray-900 dark:text-white z-10 whitespace-nowrap">
+                                3rd Place</h1>
+                            <h1
+                                class="mb-2 text-2xl lg:text-4xl font-bold tracking-tight text-gray-900 dark:text-white absolute -top-3 -translate-y-full tit whitespace-nowrap	z-20">
+                                Player 3</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 hidden" id="skip-c">
+                    <button type="button"
+                        class="focus:outline-none text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 mb-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-900"
+                        id="skip">Skip</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="absolute flex flex-col bottom-0 ml-4" id="toast"></div>
+    <script src="main.js" type="module"></script>
+    <script>
+        tailwind.config.darkMode = "class"
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="24"
+   height="24"
+   version="1.1"
+   id="svg838"
+   sodipodi:docname="marker.svg"
+   inkscape:version="1.1.2 (b8e25be833, 2022-02-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs842" />
+  <sodipodi:namedview
+     id="namedview840"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     showgrid="false"
+     inkscape:zoom="76.916667"
+     inkscape:cx="12.143012"
+     inkscape:cy="10.933911"
+     inkscape:window-width="3840"
+     inkscape:window-height="2126"
+     inkscape:window-x="-11"
+     inkscape:window-y="-11"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg838" />
+  <path
+     d="m 12,2 c -3.8641657,0.00441 -6.9955914,3.1358343 -7,7 0,5.353 6.036,11.45 6.293,11.707 L 12,21.414 12.707,20.707 C 12.964,20.45 19,14.353 19,9 18.995591,5.1358343 15.864166,2.0044086 12,2 Z"
+     fill="#ff0000"
+     sodipodi:nodetypes="ccscscc" />
+  <path
+     d="M12 6a3 3 0 1 0 3 3 3 3 0 0 0-3-3zm0 4a1 1 0 1 1 1-1 1 1 0 0 1-1 1z"
+     fill="#fff"/>
+</svg>
