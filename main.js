@@ -585,7 +585,7 @@ const initMap = function () {
 		//ctx.drawImage(img, 0,0);
 	};
 	img.src = "world.svg";
-
+	window.img = img;
 
 	let z = 1;
 	let zz = 0;
@@ -664,6 +664,7 @@ const initMap = function () {
 
 
 		Object.keys(markerList).forEach(l => {
+			if(!markerList[l].x) return;
 			fx = (markerList[l].x * z) + mx1;
 			fy = (markerList[l].y * z) + my1;
 			$(`#${l}`).css('transform', `translate(${String(fx)}px,${String(fy)}px)`);
@@ -700,13 +701,15 @@ const initMap = function () {
 			e.preventDefault();
 		oldZ = z;
 		oldZz = zz;
+		console.log(e.originalEvent.detail)
 		if (n)
 			zz += (e.scale - 1) / 100;
 		else
-			zz += e.originalEvent.wheelDelta / Math.abs(e.originalEvent.wheelDelta);
+			zz += (e.originalEvent.wheelDelta || -e.originalEvent.detail) / Math.abs((e.originalEvent.wheelDelta || e.originalEvent.detail));
 		$('#d2').text(zz);
 		if (zz < 1) zz = 1
 		z = 2 ** zz;
+		console.log('zz',zz,'z',z)
 		if (oldZz < zz) {
 			jx = mx * 2;
 			jy = my * 2;
@@ -738,17 +741,21 @@ const initMap = function () {
 		//(my)+(canvasHeight/2)
 		//console.log(0,canvasWidth,(mx)+(canvasWidth/2),(img.width*z)-((mx)+(canvasWidth/2)),(e.clientX-offsetX));
 		let o = document.querySelector('#map svg').getBoundingClientRect();
+		console.log(e.clientX,o.left,z)
 		flagX = (e.clientX - o.left) / z;
 		flagY = (e.clientY - o.top) / z;
 
 		C = $('#map svg .green').attr('title');
-		console.log(C);
 
 		b.put(flagX, flagY);
 
-		console.log(flagX, flagY);
 
 		await render();
+
+
+		$('#map').removeClass('cursor-crosshair');
+		$('#map').addClass('cursor-wait');
+		$('#submit').trigger('click');
 
 		return false;
 	}
@@ -882,6 +889,9 @@ const initMap = function () {
 			merge: true
 		});
 		$('#submit').text('Submit');
+		
+		$('#map').addClass('cursor-crosshair');
+		$('#map').removeClass('cursor-wait');
 	});
 	$('#s').on('click', async () => {
 		$('#s').html(`<svg aria-hidden="true" role="status" class="inline mr-3 w-4 h-4 text-white animate-spin" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -903,6 +913,9 @@ const initMap = function () {
 	});
 	$('#skip').on('click', async () => {
 		CanSkip = true;
+	});
+	$('#ansInp1').on('change',async ()=>{
+		$('#s').trigger('click');
 	});
 };
 
@@ -1029,7 +1042,7 @@ let gameList = [{
 	time: 0
 }];
 let GG = {};
-
+window.GG = GG;
 async function startGame() {
 	await setDoc(doc(db, "rooms", window.room), {
 		gameStarted: true
@@ -1061,6 +1074,17 @@ async function startGame() {
 			GG.I[GG.i] = {};
 			let gIN = q.for;
 			let PL = {};
+			let PLl = {};
+			players.forEach(async p => {
+				PLl[p.uid] = {};
+				PLl[p.uid].ans = "";
+			});
+			await setDoc(doc(db, "rooms", window.room), {
+				players: PLl
+			}, {
+				merge: true
+			});
+			
 			switch (q.type) {
 				case 0:
 					await setDoc(doc(db, "rooms", window.room), {
@@ -1150,7 +1174,7 @@ async function startGame() {
 					if (q.type == 16) return;
 					if (q.type == 17) return;
 					if (q.type == 32) return;
-					GG.a[GG.i][p.uid] = p.ans;
+					GG.a[GG.i][p.uid] = p.ans || "";
 					let H = false;
 					try {
 						if (q.type == 0) {
@@ -1272,7 +1296,7 @@ async function gameUpdate(G) {
 			});
 			$('#q-w,#map-c').removeClass('hidden');
 			$('#flagQ').addClass('hidden');
-			$('#submit').removeClass('hidden');
+			//$('#submit').removeClass('hidden');
 			$('#mapAns-c').addClass('hidden');
 			break;
 		case 17:
@@ -1325,7 +1349,7 @@ async function gameUpdate(G) {
 			break;
 		case 32:
 			stopHighlight();
-			$('#ansInp1-c,#map-c').addClass('hidden');
+			$('#ansInp1-c,#map-c,#flagQ').addClass('hidden');
 			$('#skip-c').addClass('hidden');
 			let R = [];
 			players.forEach(p => {
