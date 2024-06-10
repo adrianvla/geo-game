@@ -1,7 +1,7 @@
 # geo-game
 A mobile friendly multiplayer geography game
 
-https://morisinc.net/geo-game
+https://geo.morisinc.net
 
 
 ### License
