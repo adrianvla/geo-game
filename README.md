@@ -5,7 +5,7 @@ https://geo.morisinc.net
 
 
 ### License
-By using, adapting, downloading this in any shape or form, you agree to CC-BY-NC-SA. This work is licensed under that license.
+By using, adapting, downloading this in any shape or form, you agree to MIT. This work is licensed under that license.
 
 # Updates
 
